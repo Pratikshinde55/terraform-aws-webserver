@@ -1,0 +1,94 @@
+### By using this file we can able to create VPC with "single subnet range" it menas in only one availability zone & and only one subnet range  ##############
+
+data "aws_ami" "ps-ami-block" {
+    most_recent = "true"
+    owners = ["amazon"]
+
+    filter {
+      name = "name"
+      values = ["al2023-ami-*-x86_64"]
+    }
+    filter {
+      name = "root-device-type"
+      values = ["ebs"]
+    }
+    filter {
+      name = "virtualization-type"
+      values = ["hvm"]
+    } 
+}
+
+resource "aws_instance" "ps-instance-block" {
+    ami = data.aws_ami.ps-ami-block.id
+    instance_type = "t2.micro"
+    key_name = "psTerraform-key"
+    vpc_security_group_ids = [ aws_security_group.ps-SG-block.id ]
+    associate_public_ip_address = true 
+    subnet_id = aws_subnet.ps-subnet-block.id
+    tags = {
+       Name = "ps-ec2"
+    }
+    depends_on =  [
+         data.aws_ami.ps-ami-block ,
+         aws_security_group.ps-SG-block ,
+         aws_vpc.ps-vpc-block
+    ]
+}
+
+########## AWS Security group
+
+resource "aws_security_group" "ps-SG-block" {
+     name = "TF-SG-ps"
+     description = "This SG from Terraform"
+     vpc_id = aws_vpc.ps-vpc-block.id
+    
+     dynamic "ingress" {
+        for_each = var.Allow-TCP
+        iterator = x
+        content {
+            from_port = x.value
+            to_port = x.value
+            protocol = "tcp"
+            cidr_blocks = ["0.0.0.0/0"]
+         }
+      }
+      egress {
+          from_port = 0
+          to_port = 0
+          protocol = "-1"
+          cidr_blocks = ["0.0.0.0/0"]
+      }
+      
+}   
+}
+variable "Allow-TCP" {
+     type = list(number)
+     default = [22, 80, 443, 8080]     
+}
+
+############ Create AWS VPC ######
+
+resource "aws_vpc" "ps-vpc-block" {
+     cidr_block = "10.0.0.0/16"
+     tags = {
+        Name = "my-VPC"
+     }
+}
+
+####### Subnet For VPC- Single Subnet Range for VPC ########
+
+resource "aws_subnet" "ps-subnet-block" {
+  vpc_id                  = aws_vpc.ps-vpc-block.id
+  cidr_block              = "10.0.1.0/24"  
+  availability_zone       =  "ap-south-1a"
+  map_public_ip_on_launch = true
+ 
+  tags = {
+    Name = "ps-subnet-block"
+  }
+  depends_on = [
+     aws_vpc.ps-vpc-block  
+  ]
+  
+}
+
