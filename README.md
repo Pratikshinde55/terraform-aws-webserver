@@ -29,12 +29,14 @@
            filter {
               name = "root-device-type"
               values = ["ebs"]
-            }
-            filter {
+           }
+           filter {
                name = "virtualization-type"
               values = ["hvm"]
-             }
+           }
       }       
 
 
 ## Step-: [aws_instance Resource]
+
+
