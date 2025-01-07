@@ -18,6 +18,8 @@ data "aws_ami" "ami-id-ec2" {
 }
 
 resource "aws_instance" "pratik-ec2-resource" {
+
+    #count = length(aws_subnet.ps-subnet)                                     #This will launch one EC2 instance in each subnet for multiple ec2 by using count =5.
     ami = data.aws_ami.ami-id-ec2.id
     instance_type = var.InstanceType
     key_name = "psTerraform-key"
