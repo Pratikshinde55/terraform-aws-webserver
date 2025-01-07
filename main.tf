@@ -19,13 +19,12 @@ data "aws_ami" "ami-id-ec2" {
 
 resource "aws_instance" "pratik-ec2-resource" {
 
-    #count = length(aws_subnet.ps-subnet)                                     #This will launch one EC2 instance in each subnet for multiple ec2 by using count =5.
     ami = data.aws_ami.ami-id-ec2.id
     instance_type = var.InstanceType
     key_name = "psTerraform-key"
     vpc_security_group_ids = [aws_security_group.Pratik-SG-block.id]  
-    subnet_id = element(aws_subnet.ps-subnet.*.id, 0)                                      ## Subnet referance give with elemnt because there is two subnet i created for single VPC.
-    associate_public_ip_address = true                                                     ## public IP is assigned
+    subnet_id = element(aws_subnet.ps-subnet.*.id, 0)                      ## Subnet referance give with elemnt because there is two subnet i created for single VPC.
+    associate_public_ip_address = true                                     ## public IP is assigned
     tags = {
        Name = var.InstanceName
     }
